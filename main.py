@@ -62,8 +62,11 @@ with open(file=summer_path, mode="r") as f:
         count: int = 0
         for row in subject:
             text: str = str.strip(row.text_content())
+            extra_table: List[html.HtmlElement] = row.xpath('td/table')
+            has_table: bool = len(extra_table) > 0
 
-            if text != "" and "CRN" not in text and "START DATE" not in text and text != header:
+            if text != "" and "CRN" not in text and "START DATE" not in text and text != header \
+                    and not has_table:
                 count += 1
 
                 if count == 1:
@@ -73,7 +76,7 @@ with open(file=summer_path, mode="r") as f:
                 # print(f"{count} - \"{text}\"")
                 course.append(row)
 
-                if count == 4:
+                if count == 3:
                     if header not in courses:
                         courses[header] = []
 
@@ -83,93 +86,105 @@ with open(file=summer_path, mode="r") as f:
         # print("--------------------------------------------------------")
 
     # Parse Out Data From Courses Itself
-    # for subject_long in courses.keys():
-    subject_long: str = "Accounting"
-    print("Length: {length}".format(length=len(courses[subject_long])))
-    for course in courses[subject_long]:
-        count: int = 0
+    for subject_long in courses.keys():
+        # TODO: Fix For Multiple Dates In Course!!!
+        if subject_long == "Biology" or subject_long == "Chemistry"\
+                or subject_long == "Geography" or subject_long == "Geology"\
+                or subject_long == "Physical Therapy" or subject_long == "Nursing"\
+                or subject_long == "Supplemental Instruction" or subject_long == "Transitional Doct of Phys Ther":
+            continue
 
-        crn: Optional[str] = None
-        subject: Optional[str] = None
-        crse: Optional[str] = None
-        sec: Optional[str] = None
-        credits: Optional[str] = None
-        title: Optional[str] = None
-        sub_college: Optional[str] = None
-        start_date: Optional[str] = None
-        end_date: Optional[str] = None
-        days: Optional[str] = None
-        times: Optional[str] = None
-        building: Optional[str] = None
-        room: Optional[str] = None
-        instructor: Optional[str] = None
-        enrolled: Optional[str] = None
-        seats: Optional[str] = None
-        waitlist_max: Optional[str] = None
-        waitlist_available: Optional[str] = None
+        # subject_long: str = "Accounting"
+        print("Length: {length}".format(length=len(courses[subject_long])))
+        for course in courses[subject_long]:
+            count: int = 0
 
-        for row in course:
-            count += 1
+            crn: Optional[str] = None
+            subject: Optional[str] = None
+            crse: Optional[str] = None
+            sec: Optional[str] = None
+            credits: Optional[str] = None
+            title: Optional[str] = None
+            sub_college: Optional[str] = None
+            start_date: Optional[str] = None
+            end_date: Optional[str] = None
+            days: Optional[str] = None
+            times: Optional[str] = None
+            building: Optional[str] = None
+            room: Optional[str] = None
+            instructor: Optional[str] = None
+            enrolled: Optional[str] = None
+            seats: Optional[str] = None
+            waitlist_max: Optional[str] = None
+            waitlist_available: Optional[str] = None
 
-            if count == 1:  # and len(p_crn) > 0
-                values: List[html.HtmlElement] = row.xpath('td/small')
+            for row in course:
+                # print(html.tostring(row))
+                count += 1
 
-                crn = str.strip(values[0].text_content())
-                subject = str.strip(values[1].text_content())
-                crse = str.strip(values[2].text_content())
-                sec = str.strip(values[3].text_content())
-                credits = str.strip(values[4].text_content())
-                title = str.strip(values[5].text_content())
-                sub_college = str.strip(values[6].text_content())
+                if count == 1:  # and len(p_crn) > 0
+                    values: List[html.HtmlElement] = row.xpath('td/small')
 
-                print(f"Course ID: {crn}")
-                print(f"Subject: {subject}")
-                print(f"Subject (Long): {subject_long}")
-                print(f"CRSE: {crse}")
-                print(f"SEC: {sec}")
-                print(f"Credits: {credits}")
-                print(f"Title: {title}")
-                print(f"Sub-College: {sub_college}")
-            elif count == 2:
-                values: List[html.HtmlElement] = row.xpath('td')
+                    crn = str.strip(values[0].text_content())
+                    subject = str.strip(values[1].text_content())
+                    crse = str.strip(values[2].text_content())
+                    sec = str.strip(values[3].text_content())
+                    credits = str.strip(values[4].text_content())
+                    title = str.strip(values[5].text_content())
+                    sub_college = str.strip(values[6].text_content())
 
-                start_date = str.strip(values[1].text_content())
-                end_date = str.strip(values[2].text_content())
-                days = str.strip(values[3].text_content())
-                times = str.strip(values[4].text_content())
-                building = str.strip(values[5].text_content())
-                room = str.strip(values[6].text_content())
+                    print(f"Course ID: {crn}")
+                    print(f"Subject: {subject}")
+                    print(f"Subject (Long): {subject_long}")
+                    print(f"CRSE: {crse}")
+                    print(f"SEC: {sec}")
+                    print(f"Credits: {credits}")
+                    print(f"Title: {title}")
+                    print(f"Sub-College: {sub_college}")
+                elif count == 2:
+                    values: List[html.HtmlElement] = row.xpath('td')
 
-                print(f"Start Date: {start_date}")
-                print(f"End Date: {end_date}")
-                print(f"Days: {days}")
-                print(f"Times: {times}")
-                print(f"Building: {building}")
-                print(f"Room: {room}")
-            elif count == 3:
-                values: List[html.HtmlElement] = row.xpath('td')
+                    start_date = str.strip(values[1].text_content())
+                    end_date = str.strip(values[2].text_content())
+                    days = str.strip(values[3].text_content())
+                    times = str.strip(values[4].text_content())
+                    building = str.strip(values[5].text_content())
+                    room = str.strip(values[6].text_content())
 
-                instructor = str.rsplit(str.strip(values[1].text_content()), sep=": ")[1]
-                enrolled = str.rsplit(str.strip(values[2].text_content()), sep=": ")[1]
-                seats = str.rsplit(str.strip(values[3].text_content()), sep=": ")[1]
+                    print(f"Start Date: {start_date}")
+                    print(f"End Date: {end_date}")
+                    print(f"Days: {days}")
+                    print(f"Times: {times}")
+                    print(f"Building: {building}")
+                    print(f"Room: {room}")
+                elif count == 3:
+                    values: List[html.HtmlElement] = row.xpath('td')
 
-                print(f"Instructor: {instructor}")
-                print(f"Enrolled: {enrolled}")
-                print(f"Seats: {seats}")
-            elif count == 4:
-                values: List[html.HtmlElement] = row.xpath('td')
+                    instructor = str.rsplit(str.strip(values[1].text_content()), sep=": ")[1]
+                    enrolled = str.rsplit(str.strip(values[2].text_content()), sep=": ")[1]
 
-                waitlist_max = str.rsplit(str.strip(values[2].text_content()), sep=": ")[1]
-                # waitlist_available = str.rsplit(str.strip(values[3].text_content()), sep=": ")[1]
+                    try:
+                        seats = str.rsplit(str.strip(values[3].text_content()), sep=": ")[1]
+                    except IndexError:
+                        seats = str.strip(values[3].text_content())
 
-                print(f"Waitlist Maximum: {waitlist_max}")
-                print(f"Waitlist Available: {waitlist_available}")
+                    print(f"Instructor: {instructor}")
+                    print(f"Enrolled: {enrolled}")
+                    print(f"Seats: {seats}")
+                elif count == 4:
+                    values: List[html.HtmlElement] = row.xpath('td')
 
-            if count == 4:
-                course_class: Course = Course(name=title, course_id=int(crse), subject=subject, long_subject=subject_long,
-                                              units=credits, term="GET ME FROM FILE NAME", instructors=instructor,
-                                              sub_college=sub_college,
-                                              section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
-                                              start_date=start_date, end_date=end_date, meets=f"{days} {times}", location=building)
+                    waitlist_max = str.rsplit(str.strip(values[2].text_content()), sep=": ")[1]
+                    # waitlist_available = str.rsplit(str.strip(values[3].text_content()), sep=": ")[1]
 
-                print(course_class.to_string())
+                    print(f"Waitlist Maximum: {waitlist_max}")
+                    print(f"Waitlist Available: {waitlist_available}")
+
+                if count == 4:
+                    course_class: Course = Course(name=title, course_id=int(crse), subject=subject, long_subject=subject_long,
+                                                  units=credits, term="GET ME FROM FILE NAME", instructors=instructor,
+                                                  sub_college=sub_college,
+                                                  section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
+                                                  start_date=start_date, end_date=end_date, meets=f"{days} {times}", location=building)
+
+                    print(course_class.to_string())
