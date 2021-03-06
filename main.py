@@ -184,7 +184,7 @@ def load_courses(current_path: str, term: str) -> List[Course]:
                             # print("Skipping Multidate!!!")
                             pass
                         else:
-                            course_class: Course = Course(name=title, course_id=crn, subject=subject, long_subject=subject_long,
+                            course_class: Course = Course(name=title, course_id=crse, subject=subject, long_subject=subject_long,
                                                           units=credits, term=term, instructors=instructor,
                                                           sub_college=sub_college,
                                                           section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
@@ -196,10 +196,16 @@ def load_courses(current_path: str, term: str) -> List[Course]:
 
 
 if __name__ == "__main__":
-    current_path: str = summer_path
-    term: str = "Summer 2021"
+    current_path: str = fall_path
+    term: str = "Fall 2021"
 
     courses: List[Course] = load_courses(current_path=summer_path, term=term)
+    sections: List[dict] = []
 
     for course in courses:
         print(course.to_string())
+        sections.append(course.sections_dict())
+
+    courses_df: pd.DataFrame = pd.DataFrame(sections)
+    print(courses_df)
+    courses_df.to_csv(f"{current_path}.csv")

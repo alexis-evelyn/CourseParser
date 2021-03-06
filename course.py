@@ -2,7 +2,7 @@ from typing import Optional
 
 
 class Course:
-    def __init__(self, name: str, course_id: str, subject: str, units: str, term: str, instructors: str, section: str, occupancy: str, capacity, start_date: str, end_date: str, meets: str, location: str, waitlist: Optional[str] = None, college: str = "UNIVERSITY OF NORTH GEORGIA", long_subject: Optional[str] = None, sub_college: Optional[str] = None, career: Optional[str] = None, description: Optional[str] = None, prerequisites: Optional[str] = None, corequisites: Optional[str] = None, equivalent_courses: Optional[str] = None, components: Optional[str] = None, class_attributes: Optional[str] = None, notes: Optional[str] = None, grading_basis: Optional[str] = None, instruction_mode: Optional[str] = None, textbooks: Optional[str] = None):
+    def __init__(self, name: str, course_id: str, subject: str, units: str, term: str, instructors: str, section: str, occupancy: str, capacity: str, start_date: str, end_date: str, meets: str, location: str, waitlist: Optional[str] = None, college: str = "UNIVERSITY OF NORTH GEORGIA", long_subject: Optional[str] = None, sub_college: Optional[str] = None, career: Optional[str] = None, description: Optional[str] = None, prerequisites: Optional[str] = None, corequisites: Optional[str] = None, equivalent_courses: Optional[str] = None, components: Optional[str] = None, class_attributes: Optional[str] = None, notes: Optional[str] = None, grading_basis: Optional[str] = None, instruction_mode: Optional[str] = None, textbooks: Optional[str] = None):
         self.name = name
         self.course_id = course_id
         self.subject = subject
@@ -11,6 +11,15 @@ class Course:
         self.term = term
         self.instructors = instructors
         self.college = college
+
+        self.section = section
+        self.occupancy = occupancy
+        self.start_date = start_date
+        self.capacity = capacity
+        self.end_date = end_date
+        self.location = location
+        self.meets = meets
+        self.waitlist = waitlist
 
         self.sub_college = sub_college
         self.career = career
@@ -27,3 +36,55 @@ class Course:
 
     def to_string(self) -> str:
         return f"{self.name} - {self.long_subject} ({self.subject}) {self.course_id}"
+
+    def sections_dict(self) -> dict:
+        results: dict = {
+            "section": self.section,  # Required
+            "course": self.long_subject,  # Required
+            "course_id": self.course_id,  # Required
+            "college": self.college,  # Required
+            "description": self.description,
+            "component": self.components,
+            "notes": self.notes,
+            "occupancy": self.occupancy,  # Integer
+            "capacity": self.capacity,  # Integer
+            "waitlist": self.waitlist,  # Integer
+            "start_date": self.start_date,  # Date
+            "end_date": self.end_date,  # Date
+            "meets": self.meets,
+            "location": self.location,
+            "final_deadline": None,  # Date
+            "units": self.units,
+            "grading_basis": self.grading_basis,
+            "instruction_mode": self.instruction_mode,
+            "term": self.term,  # Required
+            "instructors": self.instructors,
+            "textbooks": self.textbooks
+        }
+
+        return results
+
+    def sections_dtype(self) -> dict:
+        dtype: dict = {
+            "section": "str",
+            "course": "str",
+            "course_id": "str",
+            "college": "str",
+            "description": "str",
+            "component": "str",
+            "notes": "str",
+            "occupancy": "int",
+            "capacity": "int",
+            "waitlist": "int",
+            "start_date": "str",  # Date
+            "end_date": "str",  # Date
+            "meets": "str",
+            "location": "str",
+            "final_deadline": "str",
+            "units": "str",
+            "grading_basis": "str",
+            "instruction_mode": "str",
+            "term": "str",
+            "instructors": "str",
+            "textbooks": "str"
+        }
