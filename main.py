@@ -87,13 +87,6 @@ def load_courses(current_path: str, term: str) -> List[Course]:
 
         # Parse Out Data From Courses Itself
         for subject_long in courses.keys():
-            # TODO: Fix For Multiple Dates In Course!!!
-            if subject_long == "Chemistry"\
-                    or subject_long == "Geography" or subject_long == "Geology"\
-                    or subject_long == "Physical Therapy" or subject_long == "Nursing"\
-                    or subject_long == "Supplemental Instruction" or subject_long == "Transitional Doct of Phys Ther":
-                continue
-
             # subject_long: str = "Accounting"
             # print("Length: {length}".format(length=len(courses[subject_long])))
             for course in courses[subject_long]:
