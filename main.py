@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import os
+import re
 import pandas as pd
 
 from typing import List, Optional
@@ -11,6 +12,9 @@ from course import Course
 fall_path: str = "working/courses/courses-fall-2021.html"
 spring_path: str = "working/courses/courses-spring-2021.html"
 summer_path: str = "working/courses/courses-summer-2021.html"
+
+current_path: str = summer_path
+term: str = "Summer 2021"
 
 courses: List[Course] = []
 
@@ -59,7 +63,6 @@ with open(file=summer_path, mode="r") as f:
             # print(header)
 
         # print("--------------------------------------------------------")
-        count: int = 0
         for row in subject:
             text: str = str.strip(row.text_content())
             extra_table: List[html.HtmlElement] = row.xpath('td/table')
@@ -67,38 +70,35 @@ with open(file=summer_path, mode="r") as f:
 
             if text != "" and "CRN" not in text and "START DATE" not in text and text != header \
                     and not has_table:
-                count += 1
 
-                if count == 1:
+                rhtml: str = str(html.tostring(row))
+                if "a href" in rhtml and "disp_course_detail" in rhtml:
                     course: List[html.HtmlElement] = []
                     # print("+++")
 
                 # print(f"{count} - \"{text}\"")
                 course.append(row)
 
-                if count == 3:
+                if "<b>Instructor" in rhtml:
                     if header not in courses:
                         courses[header] = []
 
                     courses[header].append(course)
                     # print("+++")
-                    count = 0
         # print("--------------------------------------------------------")
 
     # Parse Out Data From Courses Itself
     for subject_long in courses.keys():
         # TODO: Fix For Multiple Dates In Course!!!
-        if subject_long == "Biology" or subject_long == "Chemistry"\
+        if subject_long == "Chemistry"\
                 or subject_long == "Geography" or subject_long == "Geology"\
                 or subject_long == "Physical Therapy" or subject_long == "Nursing"\
                 or subject_long == "Supplemental Instruction" or subject_long == "Transitional Doct of Phys Ther":
             continue
 
         # subject_long: str = "Accounting"
-        print("Length: {length}".format(length=len(courses[subject_long])))
+        # print("Length: {length}".format(length=len(courses[subject_long])))
         for course in courses[subject_long]:
-            count: int = 0
-
             crn: Optional[str] = None
             subject: Optional[str] = None
             crse: Optional[str] = None
@@ -117,12 +117,15 @@ with open(file=summer_path, mode="r") as f:
             seats: Optional[str] = None
             waitlist_max: Optional[str] = None
             waitlist_available: Optional[str] = None
+            date_added: bool = False
+            multidate: bool = False
 
+            date_search = re.compile("[0-9]{2}-[A-Za-z]{3}-[0-9]{4}")
             for row in course:
                 # print(html.tostring(row))
-                count += 1
 
-                if count == 1:  # and len(p_crn) > 0
+                rhtml: str = str(html.tostring(row))
+                if "a href" in rhtml and "disp_course_detail" in rhtml:
                     values: List[html.HtmlElement] = row.xpath('td/small')
 
                     crn = str.strip(values[0].text_content())
@@ -133,15 +136,20 @@ with open(file=summer_path, mode="r") as f:
                     title = str.strip(values[5].text_content())
                     sub_college = str.strip(values[6].text_content())
 
-                    print(f"CRN: {crn}")
-                    print(f"Subject: {subject}")
-                    print(f"Subject (Long): {subject_long}")
-                    print(f"Course ID: {crse}")
-                    print(f"Section: {sec}")
-                    print(f"Credits: {credits}")
-                    print(f"Title: {title}")
-                    print(f"Sub-College: {sub_college}")
-                elif count == 2:
+                    # print(f"CRN: {crn}")
+                    # print(f"Subject: {subject}")
+                    # print(f"Subject (Long): {subject_long}")
+                    # print(f"Course ID: {crse}")
+                    # print(f"Section: {sec}")
+                    # print(f"Credits: {credits}")
+                    # print(f"Title: {title}")
+                    # print(f"Sub-College: {sub_college}")
+                elif re.search(date_search, rhtml):
+                    if date_added:
+                        print(f"Multi-Date CRN: {crn}")
+                        multidate = True
+
+                    date_added = True
                     values: List[html.HtmlElement] = row.xpath('td')
 
                     start_date = str.strip(values[1].text_content())
@@ -151,13 +159,13 @@ with open(file=summer_path, mode="r") as f:
                     building = str.strip(values[5].text_content())
                     room = str.strip(values[6].text_content())
 
-                    print(f"Start Date: {start_date}")
-                    print(f"End Date: {end_date}")
-                    print(f"Days: {days}")
-                    print(f"Times: {times}")
-                    print(f"Building: {building}")
-                    print(f"Room: {room}")
-                elif count == 3:
+                    # print(f"Start Date: {start_date}")
+                    # print(f"End Date: {end_date}")
+                    # print(f"Days: {days}")
+                    # print(f"Times: {times}")
+                    # print(f"Building: {building}")
+                    # print(f"Room: {room}")
+                elif "Instructor:" in rhtml:
                     values: List[html.HtmlElement] = row.xpath('td')
 
                     instructor = str.rsplit(str.strip(values[1].text_content()), sep=": ")[1]
@@ -168,10 +176,10 @@ with open(file=summer_path, mode="r") as f:
                     except IndexError:
                         seats = str.strip(values[3].text_content())
 
-                    print(f"Instructor: {instructor}")
-                    print(f"Enrolled: {enrolled}")
-                    print(f"Seats: {seats}")
-                elif count == 4:
+                    # print(f"Instructor: {instructor}")
+                    # print(f"Enrolled: {enrolled}")
+                    # print(f"Seats: {seats}")
+                elif "<b>Waitlist" in rhtml:
                     values: List[html.HtmlElement] = row.xpath('td')
 
                     waitlist_max = str.rsplit(str.strip(values[2].text_content()), sep=": ")[1]
@@ -180,11 +188,14 @@ with open(file=summer_path, mode="r") as f:
                     print(f"Waitlist Maximum: {waitlist_max}")
                     print(f"Waitlist Available: {waitlist_available}")
 
-                if count == 4:
-                    course_class: Course = Course(name=title, course_id=int(crse), subject=subject, long_subject=subject_long,
-                                                  units=credits, term="GET ME FROM FILE NAME", instructors=instructor,
-                                                  sub_college=sub_college,
-                                                  section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
-                                                  start_date=start_date, end_date=end_date, meets=f"{days} {times}", location=building)
+                if "Instructor:" in rhtml:  # if "<b>Waitlist" in rhtml:
+                    if multidate:
+                        print("Skipping Multidate!!!")
+                    else:
+                        course_class: Course = Course(name=title, course_id=crn, subject=subject, long_subject=subject_long,
+                                                      units=credits, term=term, instructors=instructor,
+                                                      sub_college=sub_college,
+                                                      section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
+                                                      start_date=start_date, end_date=end_date, meets=f"{days} {times}", location=building)
 
-                    print(course_class.to_string())
+                        print(course_class.to_string())
