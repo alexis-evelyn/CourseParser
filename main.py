@@ -188,7 +188,7 @@ def load_courses(current_path: str, term: str) -> List[Course]:
                                                           units=credits, term=term, instructors=instructor,
                                                           sub_college=sub_college,
                                                           section=sec, occupancy=enrolled, capacity=seats, waitlist=waitlist_max,
-                                                          start_date=start_date, end_date=end_date, meets=f"{days} {times}", location=building)
+                                                          start_date=start_date, end_date=end_date, meets=str.strip(f"{days} {times}"), location=building, room=room, crn=crn)
 
                             ccourses.append(course_class)
                             # print(course_class.to_string())
@@ -196,16 +196,30 @@ def load_courses(current_path: str, term: str) -> List[Course]:
 
 
 if __name__ == "__main__":
-    current_path: str = fall_path
-    term: str = "Fall 2021"
+    current_path: str = spring_path
+    term: str = "Spring 2021"
 
     courses: List[Course] = load_courses(current_path=summer_path, term=term)
     sections: List[dict] = []
+    courses_table: List[dict] = []
+    subjects: List[dict] = []
 
     for course in courses:
         print(course.to_string())
         sections.append(course.sections_dict())
+        courses_table.append(course.courses_dict())
+        subjects.append(course.subjects_dict())
 
-    courses_df: pd.DataFrame = pd.DataFrame(sections)
-    print(courses_df)
-    courses_df.to_csv(f"{current_path}.csv")
+    courses_df: pd.DataFrame = pd.DataFrame(courses_table)
+    courses_df.to_csv(f"{current_path}.course.csv", index=False)
+
+    subjects_df: pd.DataFrame = pd.DataFrame(subjects)
+    subjects_df.to_csv(f"{current_path}.subject.csv", index=False)
+
+    sections_df: pd.DataFrame = pd.DataFrame(sections)
+    sections_df['start_date'] = pd.to_datetime(sections_df['start_date'], format="%d-%b-%Y")
+    sections_df['end_date'] = pd.to_datetime(sections_df['end_date'], format="%d-%b-%Y")
+    sections_df['final_deadline'] = pd.to_datetime(sections_df['final_deadline'], format="%d-%b-%Y")
+
+    print(sections_df)
+    sections_df.to_csv(f"{current_path}.section.csv", index=False)
